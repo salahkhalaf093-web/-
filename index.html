@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title<. صلاح  خلف حاسبة رسوم الفترات السابقة (خدمات مزاولة النشاط)م</title>
+  <title>حاسبة الرسوم - صفحة الخدمات</title>
   <style>
     :root{--bg:#0f172a;--card:#111827;--muted:#1f2937;--text:#e5e7eb;--sub:#94a3b8;--accent:#22c55e;--accent2:#16a34a}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
-    .container{max-width:900px;margin:0 auto;padding:20px}
+    .container{max-width:980px;margin:0 auto;padding:20px}
     h1{font-size:26px;margin:0 0 6px 0}
     .sub{color:var(--sub);margin-bottom:16px}
     .card{background:var(--card);border:1px solid var(--muted);border-radius:16px;padding:16px;margin-bottom:16px}
@@ -22,106 +22,147 @@
     .ok{color:#a7f3d0;font-weight:800}
     .danger{color:#fca5a5;font-weight:700}
     .hidden{display:none}
-    @media print{
-      body{background:#fff;color:#000}
-      .no-print{display:none !important}
-      .card{border:none}
-      .container{padding:0}
-    }
+    .receipt{width:100%; max-width:750px; margin:0 auto; background:#fff; color:#000; padding:20px; border-radius:12px}
+    .receipt h2{margin:0 0 10px 0; font-size:22px}
+    .rrow{display:flex;justify-content:space-between;margin:6px 0}
+    .line{border-top:1px dashed #999; margin:10px 0}
+    .stamp{border:2px solid #111; padding:6px 10px; display:inline-block; font-weight:800}
+    @media print{ body{background:#fff;color:#000} .no-print{display:none !important} .receipt{box-shadow:none; border:0; padding:0} }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>حاسبة الرسوم</h1>
-    <div class="sub">مطابقة لمعادلة الإكسل: تقريب لأقرب ربع سنوي + خيار حساب أدق (باليوم).</div>
+    <h1>صفحة الخدمات</h1>
+    <div class="sub">اختر خدمة من القائمة، احسب الرسوم، ثم اطبع الإيصال PDF مشابه لتنسيق الشيت.</div>
 
     <div class="card">
       <div class="row">
         <div>
           <label for="start">تاريخ البداية</label>
-          <input id="start" type="date" />
+          <input id="start" type="date" value="2024-01-17"/>
         </div>
         <div>
-          <label for="klass">الفئة</label>
-          <select id="klass">
-            <option value="أ">أ — 5000/سنة (1250/ربع)</option>
-            <option value="ب">ب — 4000/سنة (1000/ربع)</option>
-            <option value="ج">ج — 3000/سنة (750/ربع)</option>
-            <option value="د">د — 2000/سنة (500/ربع)</option>
-            <option value="هـ">هـ — 1000/سنة (250/ربع)</option>
-          </select>
+          <label for="service">الخدمة</label>
+          <select id="service"></select>
         </div>
       </div>
 
-      <div style="margin:12px 0" class="row">
+      <div class="row" style="margin-top:12px">
         <div>
           <label for="mode">طريقة الحساب</label>
           <select id="mode">
-            <option value="quarter">تقريب لأقرب ربع (CEILING)</option>
+            <option value="quarter" selected>تقريب لأقرب ربع (CEILING)</option>
             <option value="daily">أدق (باليوم)</option>
           </select>
         </div>
         <div>
-          <label for="rate">قيمة السنة (اختياري)</label>
-          <input id="rate" type="number" placeholder="اتركه فارغًا لاستخدام القيم الافتراضية" />
+          <label for="client">اسم العميل (للإيصال)</label>
+          <input id="client" placeholder="مثال: شركة س" />
         </div>
       </div>
 
-      <div class="btns no-print">
+      <div class="btns no-print" style="margin-top:12px">
         <button id="calc">احسب الآن</button>
-        <button id="print">حفظ كـ PDF / طباعة</button>
-        <button id="reset" class="secondary">إعادة التعيين</button>
+        <button id="print" class="secondary">حفظ الإيصال PDF</button>
       </div>
     </div>
 
     <div id="results" class="card hidden"></div>
+
+    <div id="receipt-wrap" class="card hidden">
+      <div class="receipt" id="receipt">
+        <h2>إيصال سداد خدمات</h2>
+        <div class="rrow"><span>اسم العميل:</span><b id="rc-client">—</b></div>
+        <div class="rrow"><span>الخدمة:</span><b id="rc-service">—</b></div>
+        <div class="rrow"><span>فترة الاحتساب:</span><b><span id="rc-start">—</span> → <span id="rc-end">—</span></b></div>
+        <div class="rrow"><span>عدد الأيام:</span><b id="rc-days">—</b></div>
+        <div class="rrow"><span>أساس الرسوم:</span><b id="rc-basis">تقريب لأقرب ربع</b></div>
+        <div class="line"></div>
+        <div class="rrow"><span>عدد الأرباع/القيمة اليومية:</span><b id="rc-mult">—</b></div>
+        <div class="rrow"><span>قيمة السنة:</span><b id="rc-yearly">—</b></div>
+        <div class="rrow"><span>المبلغ المستحق:</span><b id="rc-amount">—</b></div>
+        <div class="line"></div>
+        <div class="rrow"><span>تاريخ الإصدار:</span><b id="rc-issued">—</b></div>
+        <div class="rrow"><span>إمضاء/ختم:</span><b class="stamp">PAID</b></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    const CLASSES = {
-      'أ': { yearly: 5000, perQuarter: 1250 },
-      'ب': { yearly: 4000, perQuarter: 1000 },
-      'ج': { yearly: 3000, perQuarter: 750 },
-      'د': { yearly: 2000, perQuarter: 500 },
-      'هـ': { yearly: 1000, perQuarter: 250 },
-    };
-    const BASELINE = new Date(Date.UTC(2022,10,22));
+    const SERVICES = [{"name": "إصدار ترخيص / تجديد ترخيص \nبمزاولة أحد أنشطة النقل البري للبضائع .", "yearly": 5000.0}, {"name": "إصدار ترخيص/ تجديد ترخيص مزاولة نشاط وسيط الشحن للنقل البري للبضائع (داخلي / دولي).", "yearly": 1250.0}, {"name": "إصدار ترخيص/ تجديد ترخيص مزاولة نشاط وسيط الشحن للنقل البري للبضائع باستخدام تكنولوجيا المعلومات.", "yearly": 2500.0}, {"name": "إصدار ترخيص / تجديد ترخيص مزاولة نشاط النقل البري للبضائع بإستخدام تكنولوجيا المعلومات.", "yearly": 2500.0}, {"name": "الموافقة على ترخيص فرع لشركة  لمزاولة نشاط النقل البري للبضائع.", "yearly": 500.0}, {"name": "إصدار ترخيص / تجديد ترخيص بمزاولة نشاط النقل البري متعدد الوسائط.", "yearly": 2500.0}, {"name": "إصدار ترخيص / تجديد ترخيص بمزاولة نشاط النقل البري لنقل وتداول الحاويات.", "yearly": 2500.0}, {"name": "إصدار ترخيص / تجديد ترخيص بمزاولة نشاط النقل البري للبضائع الخطرة.", "yearly": 2500.0}, {"name": " إصدار بطاقة  تشغيل لوسائل النقل البري للبضائع بأجرسيارات ذات وزن أقل من (8) طناً.", "yearly": 150.0}, {"name": " إصدار بطاقة  تشغيل لوسائل النقل البري للبضائع بأجرسيارات ذات وزن قائم من (8) طن إلى (20) طن.", "yearly": 2000.0}, {"name": " إصدار بطاقة  تشغيل لوسائل النقل البري للبضائع بأجرسيارات ذات وزن قائم أكبر من (20) طن.", "yearly": 500.0}, {"name": " إصدار أو تجديد بطاقة  تشغيل \nلوسيلة النقل البري الذاتي للبضائع - سنوياً سيارات ذات وزن أقل من (8) طناً.", "yearly": 75.0}, {"name": " إصدار أو تجديد بطاقة  تشغيل \nلوسيلة النقل البري الذاتي للبضائع - سنوياً سيارات ذات وزن قائم من (8) طن إلى (30) طن", "yearly": 100.0}, {"name": " إصدار أو تجديد بطاقة  تشغيل \nلوسيلة النقل البري الذاتي للبضائع - سنوياً سيارات ذات وزن قائم أكبر من (30) طن.", "yearly": 125.0}];
+
+    const BASELINE = new Date(Date.UTC(2022,10,22)); // 2022-11-22
     const $ = sel => document.querySelector(sel);
     const results = $('#results');
+    const rwrap = $('#receipt-wrap');
 
     function toISODateUTC(d){ return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString().slice(0,10); }
-    function daysBetweenUTC(a,b){ const MS=86400000; return Math.round((b-a)/MS); }
-    function ceilQuartersFromDays(days){ return Math.ceil((days/365)*4); }
+    function daysBetweenUTC(a,b){ const MS = 86400000; const au = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate()); const bu = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()); return Math.round((bu-au)/MS); }
+    function ceilQuartersFromDays(days){ const years = days/365; return Math.ceil(years*4); }
+
+    // populate services
+    const sel = $('#service');
+    SERVICES.forEach(s => { const opt = document.createElement('option'); opt.value = s.name; opt.textContent = `${s.name} — ${s.yearly}/سنة`; sel.appendChild(opt); });
 
     function compute(){
       const startVal = $('#start').value;
-      const klass = $('#klass').value;
-      const customRate = Number($('#rate').value || NaN);
-      if(!startVal){ alert('من فضلك اختر تاريخ البداية'); return; }
-      const sd = new Date(startVal+'T00:00:00');
-      const startUTC = new Date(Date.UTC(sd.getFullYear(), sd.getMonth(), sd.getDate()));
+      const sName = $('#service').value;
+      const client = $('#client').value || '—';
+      const mode = $('#mode').value;
+
+      if(!startVal){ alert('اختر تاريخ البداية'); return; }
+      if(!sName){ alert('اختر خدمة'); return; }
+
+      const service = SERVICES.find(x=>x.name===sName);
+      const sd = new Date(startVal + 'T00:00:00');
+      const start = (new Date(Date.UTC(sd.getFullYear(), sd.getMonth(), sd.getDate())));
+      const startClamped = (start.getTime() <= BASELINE.getTime()) ? BASELINE : start;
+
       const now = new Date();
-      const yestUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()-1));
-      const start = (startUTC.getTime() <= BASELINE.getTime()) ? BASELINE : startUTC;
-      const days = daysBetweenUTC(start, yestUTC);
-      if(days<0){ results.classList.remove('hidden'); results.innerHTML='<div class="danger">تاريخ البداية لاحق ليوم أمس</div>'; return;}
-      const base=CLASSES[klass]; const yearly=Number.isFinite(customRate)?customRate:base.yearly; const perQuarter=Number.isFinite(customRate)?(customRate/4):base.perQuarter;
-      const quartersCeil = ceilQuartersFromDays(days);
-      const byQuarter = quartersCeil*perQuarter;
-      const exactDaily = (yearly*days)/365;
+      const yestUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()-1));
+
+      const days = daysBetweenUTC(startClamped, yestUTC);
+      if(days < 0){ results.classList.remove('hidden'); results.innerHTML='<div class="danger">تاريخ البداية لاحق ليوم أمس</div>'; rwrap.classList.add('hidden'); return; }
+
+      const yearly = Number(service.yearly);
+      const perQuarter = yearly/4;
+      const quarters = ceilQuartersFromDays(days);
+      const byQuarter = quarters * perQuarter;
+      const exactDaily = (yearly * days) / 365;
+
+      const amount = (mode==='quarter') ? byQuarter : exactDaily;
+      const basis = (mode==='quarter') ? 'تقريب لأقرب ربع' : 'حساب أدق (باليوم)';
+
       results.classList.remove('hidden');
-      results.innerHTML=`<h3>النتائج</h3><table>
-        <tr><th>بداية العد</th><td>${toISODateUTC(start)}</td></tr>
-        <tr><th>حتى (اليوم-1)</th><td>${toISODateUTC(yestUTC)}</td></tr>
-        <tr><th>عدد الأيام</th><td>${days}</td></tr>
-        <tr><th>الفئة</th><td>${klass}</td></tr>
-        <tr><th>المبلغ (تقريب لأقرب ربع)</th><td class="ok">${byQuarter.toFixed(2)}</td></tr>
-        <tr><th>المبلغ الأدق (باليوم)</th><td class="ok">${exactDaily.toFixed(2)}</td></tr>
-      </table>`;
+      results.innerHTML = `
+        <h3>النتائج</h3>
+        <table>
+          <tr><th>الخدمة</th><td>${sName}</td></tr>
+          <tr><th>بداية العد</th><td>${toISODateUTC(startClamped)}</td></tr>
+          <tr><th>حتى (اليوم - 1)</th><td>${toISODateUTC(yestUTC)}</td></tr>
+          <tr><th>عدد الأيام</th><td>${days}</td></tr>
+          <tr><th>قيمة السنة</th><td>${yearly.toLocaleString()}</td></tr>
+          <tr><th>عدد الأرباع (بعد التقريب)</th><td>${quarters}</td></tr>
+          <tr><th>المبلغ (بالربع)</th><td class="ok">${byQuarter.toFixed(2)}</td></tr>
+          <tr><th>المبلغ (باليوم)</th><td class="ok">${exactDaily.toFixed(2)}</td></tr>
+        </table>
+      `;
+
+      rwrap.classList.remove('hidden');
+      $('#rc-client').textContent = client;
+      $('#rc-service').textContent = sName;
+      $('#rc-start').textContent = toISODateUTC(startClamped);
+      $('#rc-end').textContent = toISODateUTC(yestUTC);
+      $('#rc-days').textContent = days;
+      $('#rc-basis').textContent = basis;
+      $('#rc-mult').textContent = (mode==='quarter') ? (quarters + ' ربع') : (days + ' يوم');
+      $('#rc-yearly').textContent = yearly.toLocaleString();
+      $('#rc-amount').textContent = amount.toFixed(2);
+      $('#rc-issued').textContent = new Date().toLocaleString('ar-EG');
     }
-    $('#calc').addEventListener('click',compute);
-    $('#reset').addEventListener('click',()=>{ $('#start').value=''; $('#rate').value=''; results.classList.add('hidden'); });
-    $('#print').addEventListener('click',()=>window.print());
+
+    $('#calc').addEventListener('click', compute);
+    $('#print').addEventListener('click', ()=>{ window.print(); });
   </script>
 </body>
 </html>

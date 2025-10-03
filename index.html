@@ -1,5 +1,127 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-<head><meta charset="utf-8"><title>حاسبة الرسوم</title></head>
-<body><h1>حاسبة الرسوم</h1><p>ضع الكود الكامل هنا...</p></body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>حاسبة الرسوم</title>
+  <style>
+    :root{--bg:#0f172a;--card:#111827;--muted:#1f2937;--text:#e5e7eb;--sub:#94a3b8;--accent:#22c55e;--accent2:#16a34a}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    .container{max-width:900px;margin:0 auto;padding:20px}
+    h1{font-size:26px;margin:0 0 6px 0}
+    .sub{color:var(--sub);margin-bottom:16px}
+    .card{background:var(--card);border:1px solid var(--muted);border-radius:16px;padding:16px;margin-bottom:16px}
+    label{display:block;margin:8px 0 6px}
+    input, select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--muted);background:#0b1220;color:var(--text)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap}
+    button{padding:12px 14px;border-radius:12px;border:1px solid var(--accent2);background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+    button.secondary{background:transparent;color:var(--text);border-color:var(--muted)}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border-bottom:1px solid var(--muted);padding:10px;text-align:right}
+    .ok{color:#a7f3d0;font-weight:800}
+    .danger{color:#fca5a5;font-weight:700}
+    .hidden{display:none}
+    @media print{
+      body{background:#fff;color:#000}
+      .no-print{display:none !important}
+      .card{border:none}
+      .container{padding:0}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>حاسبة الرسوم</h1>
+    <div class="sub">مطابقة لمعادلة الإكسل: تقريب لأقرب ربع سنوي + خيار حساب أدق (باليوم).</div>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <label for="start">تاريخ البداية</label>
+          <input id="start" type="date" />
+        </div>
+        <div>
+          <label for="klass">الفئة</label>
+          <select id="klass">
+            <option value="أ">أ — 5000/سنة (1250/ربع)</option>
+            <option value="ب">ب — 4000/سنة (1000/ربع)</option>
+            <option value="ج">ج — 3000/سنة (750/ربع)</option>
+            <option value="د">د — 2000/سنة (500/ربع)</option>
+            <option value="هـ">هـ — 1000/سنة (250/ربع)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin:12px 0" class="row">
+        <div>
+          <label for="mode">طريقة الحساب</label>
+          <select id="mode">
+            <option value="quarter">تقريب لأقرب ربع (CEILING)</option>
+            <option value="daily">أدق (باليوم)</option>
+          </select>
+        </div>
+        <div>
+          <label for="rate">قيمة السنة (اختياري)</label>
+          <input id="rate" type="number" placeholder="اتركه فارغًا لاستخدام القيم الافتراضية" />
+        </div>
+      </div>
+
+      <div class="btns no-print">
+        <button id="calc">احسب الآن</button>
+        <button id="print">حفظ كـ PDF / طباعة</button>
+        <button id="reset" class="secondary">إعادة التعيين</button>
+      </div>
+    </div>
+
+    <div id="results" class="card hidden"></div>
+  </div>
+
+  <script>
+    const CLASSES = {
+      'أ': { yearly: 5000, perQuarter: 1250 },
+      'ب': { yearly: 4000, perQuarter: 1000 },
+      'ج': { yearly: 3000, perQuarter: 750 },
+      'د': { yearly: 2000, perQuarter: 500 },
+      'هـ': { yearly: 1000, perQuarter: 250 },
+    };
+    const BASELINE = new Date(Date.UTC(2022,10,22));
+    const $ = sel => document.querySelector(sel);
+    const results = $('#results');
+
+    function toISODateUTC(d){ return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString().slice(0,10); }
+    function daysBetweenUTC(a,b){ const MS=86400000; return Math.round((b-a)/MS); }
+    function ceilQuartersFromDays(days){ return Math.ceil((days/365)*4); }
+
+    function compute(){
+      const startVal = $('#start').value;
+      const klass = $('#klass').value;
+      const customRate = Number($('#rate').value || NaN);
+      if(!startVal){ alert('من فضلك اختر تاريخ البداية'); return; }
+      const sd = new Date(startVal+'T00:00:00');
+      const startUTC = new Date(Date.UTC(sd.getFullYear(), sd.getMonth(), sd.getDate()));
+      const now = new Date();
+      const yestUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()-1));
+      const start = (startUTC.getTime() <= BASELINE.getTime()) ? BASELINE : startUTC;
+      const days = daysBetweenUTC(start, yestUTC);
+      if(days<0){ results.classList.remove('hidden'); results.innerHTML='<div class="danger">تاريخ البداية لاحق ليوم أمس</div>'; return;}
+      const base=CLASSES[klass]; const yearly=Number.isFinite(customRate)?customRate:base.yearly; const perQuarter=Number.isFinite(customRate)?(customRate/4):base.perQuarter;
+      const quartersCeil = ceilQuartersFromDays(days);
+      const byQuarter = quartersCeil*perQuarter;
+      const exactDaily = (yearly*days)/365;
+      results.classList.remove('hidden');
+      results.innerHTML=`<h3>النتائج</h3><table>
+        <tr><th>بداية العد</th><td>${toISODateUTC(start)}</td></tr>
+        <tr><th>حتى (اليوم-1)</th><td>${toISODateUTC(yestUTC)}</td></tr>
+        <tr><th>عدد الأيام</th><td>${days}</td></tr>
+        <tr><th>الفئة</th><td>${klass}</td></tr>
+        <tr><th>المبلغ (تقريب لأقرب ربع)</th><td class="ok">${byQuarter.toFixed(2)}</td></tr>
+        <tr><th>المبلغ الأدق (باليوم)</th><td class="ok">${exactDaily.toFixed(2)}</td></tr>
+      </table>`;
+    }
+    $('#calc').addEventListener('click',compute);
+    $('#reset').addEventListener('click',()=>{ $('#start').value=''; $('#rate').value=''; results.classList.add('hidden'); });
+    $('#print').addEventListener('click',()=>window.print());
+  </script>
+</body>
 </html>

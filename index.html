@@ -1,168 +1,499 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>حاسبة الرسوم - صفحة الخدمات</title>
-  <style>
-    :root{--bg:#0f172a;--card:#111827;--muted:#1f2937;--text:#e5e7eb;--sub:#94a3b8;--accent:#22c55e;--accent2:#16a34a}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
-    .container{max-width:980px;margin:0 auto;padding:20px}
-    h1{font-size:26px;margin:0 0 6px 0}
-    .sub{color:var(--sub);margin-bottom:16px}
-    .card{background:var(--card);border:1px solid var(--muted);border-radius:16px;padding:16px;margin-bottom:16px}
-    label{display:block;margin:8px 0 6px}
-    input, select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--muted);background:#0b1220;color:var(--text)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .btns{display:flex;gap:10px;flex-wrap:wrap}
-    button{padding:12px 14px;border-radius:12px;border:1px solid var(--accent2);background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
-    button.secondary{background:transparent;color:var(--text);border-color:var(--muted)}
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{border-bottom:1px solid var(--muted);padding:10px;text-align:right}
-    .ok{color:#a7f3d0;font-weight:800}
-    .danger{color:#fca5a5;font-weight:700}
-    .hidden{display:none}
-    .receipt{width:100%; max-width:750px; margin:0 auto; background:#fff; color:#000; padding:20px; border-radius:12px}
-    .receipt h2{margin:0 0 10px 0; font-size:22px}
-    .rrow{display:flex;justify-content:space-between;margin:6px 0}
-    .line{border-top:1px dashed #999; margin:10px 0}
-    .stamp{border:2px solid #111; padding:6px 10px; display:inline-block; font-weight:800}
-    @media print{ body{background:#fff;color:#000} .no-print{display:none !important} .receipt{box-shadow:none; border:0; padding:0} }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>إذن دفع رسوم خدمات مزاولة النشاط (فترات سابقة)</title>
+<style>
+  :root{--bg:#0f172a;--card:#111827;--muted:#1f2937;--text:#e5e7eb;--sub:#94a3b8;--accent:#22c55e;--accent2:#16a34a}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  .container{max-width:1100px;margin:0 auto;padding:20px}
+  h1{font-size:24px;margin:0 0 14px 0}
+  .grid{display:grid;gap:12px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  .card{background:var(--card);border:1px solid var(--muted);border-radius:14px;padding:14px}
+  label{display:block;margin:8px 0 6px}
+  input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--muted);background:#0b1220;color:var(--text)}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  button{padding:10px 12px;border-radius:10px;border:1px solid var(--accent2);background:var(--accent);color:#041;cursor:pointer;font-weight:800}
+  button.secondary{background:transparent;color:var(--text);border-color:var(--muted)}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--muted);padding:8px;text-align:right;vertical-align:top}
+  .right{ text-align:left}
+  .hidden{display:none}
+  .ok{color:#a7f3d0;font-weight:800}
+  .danger{color:#fca5a5;font-weight:700}
+
+  /* إيصال */
+  .receipt{background:#fff;color:#000;padding:18px;border-radius:12px}
+  .receipt h2{margin:0 0 10px 0}
+  .rowflex{display:flex;justify-content:space-between;gap:10px;margin:6px 0}
+  .line{border-top:1px dashed #aaa;margin:10px 0}
+  .stamp{border:2px solid #111;padding:6px 10px;display:inline-block;font-weight:800}
+
+  /* العلامة المائية في الإيصال فقط */
+  @media print{
+    #receipt::before{
+      content:"Eng Salah";
+      position:absolute; top:40%; left:20%;
+      font-size:80px; font-weight:800; color:rgba(0,0,0,0.08);
+      transform:rotate(-30deg); z-index:0; pointer-events:none; white-space:nowrap;
+    }
+    #receipt *{position:relative; z-index:1}
+    .no-print{display:none!important}
+    body{background:#fff;color:#000}
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>صفحة الخدمات</h1>
-    <div class="sub">اختر خدمة من القائمة، احسب الرسوم، ثم اطبع الإيصال PDF مشابه لتنسيق الشيت.</div>
+<div class="container">
+  <h1>إذن دفع رسوم خدمات مزاولة النشاط (فترات سابقة)</h1>
 
-    <div class="card">
-      <div class="row">
-        <div>
-          <label for="start">تاريخ البداية</label>
-          <input id="start" type="date" value="2024-01-17"/>
-        </div>
-        <div>
-          <label for="service">الخدمة</label>
-          <select id="service"></select>
-        </div>
-      </div>
-
-      <div class="row" style="margin-top:12px">
-        <div>
-          <label for="mode">طريقة الحساب</label>
-          <select id="mode">
-            <option value="quarter" selected>تقريب لأقرب ربع (CEILING)</option>
-            <option value="daily">أدق (باليوم)</option>
-          </select>
-        </div>
-        <div>
-          <label for="client">اسم العميل (للإيصال)</label>
-          <input id="client" placeholder="مثال: شركة س" />
-        </div>
-      </div>
-
-      <div class="btns no-print" style="margin-top:12px">
-        <button id="calc">احسب الآن</button>
-        <button id="print" class="secondary">حفظ الإيصال PDF</button>
-      </div>
+  <!-- رأس الإدخال العام -->
+  <div class="card grid g3">
+    <div>
+      <label for="client">اسم العميل</label>
+      <input id="client" placeholder="مثال: شركة/فرد"/>
     </div>
-
-    <div id="results" class="card hidden"></div>
-
-    <div id="receipt-wrap" class="card hidden">
-      <div class="receipt" id="receipt">
-        <h2>إيصال سداد خدمات</h2>
-        <div class="rrow"><span>اسم العميل:</span><b id="rc-client">—</b></div>
-        <div class="rrow"><span>الخدمة:</span><b id="rc-service">—</b></div>
-        <div class="rrow"><span>فترة الاحتساب:</span><b><span id="rc-start">—</span> → <span id="rc-end">—</span></b></div>
-        <div class="rrow"><span>عدد الأيام:</span><b id="rc-days">—</b></div>
-        <div class="rrow"><span>أساس الرسوم:</span><b id="rc-basis">تقريب لأقرب ربع</b></div>
-        <div class="line"></div>
-        <div class="rrow"><span>عدد الأرباع/القيمة اليومية:</span><b id="rc-mult">—</b></div>
-        <div class="rrow"><span>قيمة السنة:</span><b id="rc-yearly">—</b></div>
-        <div class="rrow"><span>المبلغ المستحق:</span><b id="rc-amount">—</b></div>
-        <div class="line"></div>
-        <div class="rrow"><span>تاريخ الإصدار:</span><b id="rc-issued">—</b></div>
-        <div class="rrow"><span>إمضاء/ختم:</span><b class="stamp">PAID</b></div>
-      </div>
+    <div>
+      <label for="startDate">تاريخ بداية النشاط / تاريخ نهاية آخر ترخيص</label>
+      <input id="startDate" type="date"/>
+    </div>
+    <div>
+      <label for="mode">طريقة الحساب</label>
+      <select id="mode">
+        <option value="quarter">تقريب لأقرب ربع (CEILING)</option>
+        <option value="daily">أدق (باليوم)</option>
+      </select>
     </div>
   </div>
 
-  <script>
-    const SERVICES = [{"name": "إصدار ترخيص / تجديد ترخيص \nبمزاولة أحد أنشطة النقل البري للبضائع .", "yearly": 5000.0}, {"name": "إصدار ترخيص/ تجديد ترخيص مزاولة نشاط وسيط الشحن للنقل البري للبضائع (داخلي / دولي).", "yearly": 1250.0}, {"name": "إصدار ترخيص/ تجديد ترخيص مزاولة نشاط وسيط الشحن للنقل البري للبضائع باستخدام تكنولوجيا المعلومات.", "yearly": 2500.0}, {"name": "إصدار ترخيص / تجديد ترخيص مزاولة نشاط النقل البري للبضائع بإستخدام تكنولوجيا المعلومات.", "yearly": 2500.0}, {"name": "الموافقة على ترخيص فرع لشركة  لمزاولة نشاط النقل البري للبضائع.", "yearly": 500.0}, {"name": "إصدار ترخيص / تجديد ترخيص بمزاولة نشاط النقل البري متعدد الوسائط.", "yearly": 2500.0}, {"name": "إصدار ترخيص / تجديد ترخيص بمزاولة نشاط النقل البري لنقل وتداول الحاويات.", "yearly": 2500.0}, {"name": "إصدار ترخيص / تجديد ترخيص بمزاولة نشاط النقل البري للبضائع الخطرة.", "yearly": 2500.0}, {"name": " إصدار بطاقة  تشغيل لوسائل النقل البري للبضائع بأجرسيارات ذات وزن أقل من (8) طناً.", "yearly": 150.0}, {"name": " إصدار بطاقة  تشغيل لوسائل النقل البري للبضائع بأجرسيارات ذات وزن قائم من (8) طن إلى (20) طن.", "yearly": 2000.0}, {"name": " إصدار بطاقة  تشغيل لوسائل النقل البري للبضائع بأجرسيارات ذات وزن قائم أكبر من (20) طن.", "yearly": 500.0}, {"name": " إصدار أو تجديد بطاقة  تشغيل \nلوسيلة النقل البري الذاتي للبضائع - سنوياً سيارات ذات وزن أقل من (8) طناً.", "yearly": 75.0}, {"name": " إصدار أو تجديد بطاقة  تشغيل \nلوسيلة النقل البري الذاتي للبضائع - سنوياً سيارات ذات وزن قائم من (8) طن إلى (30) طن", "yearly": 100.0}, {"name": " إصدار أو تجديد بطاقة  تشغيل \nلوسيلة النقل البري الذاتي للبضائع - سنوياً سيارات ذات وزن قائم أكبر من (30) طن.", "yearly": 125.0}];
+  <!-- اختيار الخدمة -->
+  <div class="card">
+    <label for="svc">اختر الخدمة</label>
+    <select id="svc"></select>
 
-    const BASELINE = new Date(Date.UTC(2022,10,22)); // 2022-11-22
-    const $ = sel => document.querySelector(sel);
-    const results = $('#results');
-    const rwrap = $('#receipt-wrap');
+    <!-- نماذج ديناميكية بحسب نوع الخدمة -->
+    <div id="svcDynamic" class="grid g2" style="margin-top:10px"></div>
 
-    function toISODateUTC(d){ return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString().slice(0,10); }
-    function daysBetweenUTC(a,b){ const MS = 86400000; const au = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate()); const bu = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()); return Math.round((bu-au)/MS); }
-    function ceilQuartersFromDays(days){ const years = days/365; return Math.ceil(years*4); }
+    <div class="btns">
+      <button id="addToBasket">إضافة إلى الإيصال</button>
+      <button id="resetSvc" class="secondary">مسح المدخلات</button>
+    </div>
+  </div>
 
-    // populate services
-    const sel = $('#service');
-    SERVICES.forEach(s => { const opt = document.createElement('option'); opt.value = s.name; opt.textContent = `${s.name} — ${s.yearly}/سنة`; sel.appendChild(opt); });
+  <!-- السلة -->
+  <div class="card">
+    <h3 style="margin:0 0 10px">بنود الإيصال</h3>
+    <table id="basketTable">
+      <thead>
+        <tr><th>الخدمة</th><th>التفاصيل</th><th>المبلغ</th><th class="right">إجراءات</th></tr>
+      </thead>
+      <tbody id="basketBody"></tbody>
+    </table>
 
-    function compute(){
-      const startVal = $('#start').value;
-      const sName = $('#service').value;
-      const client = $('#client').value || '—';
-      const mode = $('#mode').value;
+    <div class="grid g3" style="margin-top:10px">
+      <div>
+        <label for="devFee">رسم تنمية</label>
+        <input id="devFee" type="number" value="2" step="0.01">
+      </div>
+      <div>
+        <label for="stamp">ضريبة دمغة</label>
+        <input id="stamp" type="number" value="3" step="0.01">
+      </div>
+      <div>
+        <label for="invSeq">رقم الإيصال</label>
+        <input id="invSeq" type="text" placeholder="يُملأ تلقائيًا" />
+      </div>
+    </div>
 
-      if(!startVal){ alert('اختر تاريخ البداية'); return; }
-      if(!sName){ alert('اختر خدمة'); return; }
+    <div class="btns">
+      <button id="finalize">اعتماد وطباعة الإيصال</button>
+      <button id="clearBasket" class="secondary">إفراغ السلة</button>
+    </div>
+  </div>
 
-      const service = SERVICES.find(x=>x.name===sName);
-      const sd = new Date(startVal + 'T00:00:00');
-      const start = (new Date(Date.UTC(sd.getFullYear(), sd.getMonth(), sd.getDate())));
-      const startClamped = (start.getTime() <= BASELINE.getTime()) ? BASELINE : start;
+  <!-- الإيصال -->
+  <div id="receiptWrap" class="card">
+    <div id="receipt" class="receipt">
+      <h2>إيصال سداد رسوم</h2>
+      <div class="rowflex">
+        <div>اسم العميل: <b id="rcClient">—</b></div>
+        <div>التاريخ: <b id="rcDate">—</b></div>
+      </div>
+      <div class="rowflex">
+        <div>رقم الإيصال: <b id="rcNo">—</b></div>
+        <div>أساس الحساب: <b id="rcBasis">—</b></div>
+      </div>
+      <div class="line"></div>
+      <table id="rcItems">
+        <thead>
+          <tr><th>البند</th><th>التفاصيل</th><th>المبلغ</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="line"></div>
+      <div class="rowflex"><span>الإجمالي قبل الرسوم:</span><b id="rcSub">—</b></div>
+      <div class="rowflex"><span>رسم تنمية:</span><b id="rcDev">—</b></div>
+      <div class="rowflex"><span>ضريبة دمغة:</span><b id="rcStamp">—</b></div>
+      <div class="line"></div>
+      <div class="rowflex"><span><b>الإجمالي المستحق:</b></span><b id="rcTotal">—</b></div>
+      <div class="line"></div>
+      <div class="rowflex"><span>تاريخ الإصدار:</span><b id="rcIssued">—</b></div>
+      <div class="rowflex"><span>إمضاء/ختم:</span><b class="stamp">PAID</b></div>
+    </div>
+  </div>
 
-      const now = new Date();
-      const yestUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()-1));
+  <!-- التقارير -->
+  <div class="card">
+    <h3 style="margin:0 0 10px">التقارير اليومية</h3>
+    <div class="grid g2">
+      <div>
+        <label for="repDate">تاريخ</label>
+        <input id="repDate" type="date">
+      </div>
+      <div class="btns">
+        <button id="repByService">حسب الخدمة</button>
+        <button id="repByClient" class="secondary">حسب العميل</button>
+      </div>
+    </div>
+    <div id="repOut" style="margin-top:10px"></div>
+  </div>
 
-      const days = daysBetweenUTC(startClamped, yestUTC);
-      if(days < 0){ results.classList.remove('hidden'); results.innerHTML='<div class="danger">تاريخ البداية لاحق ليوم أمس</div>'; rwrap.classList.add('hidden'); return; }
+  <div class="sub no-print" style="color:var(--sub);margin-top:6px">© Eng Salah</div>
+</div>
 
-      const yearly = Number(service.yearly);
-      const perQuarter = yearly/4;
-      const quarters = ceilQuartersFromDays(days);
-      const byQuarter = quarters * perQuarter;
-      const exactDaily = (yearly * days) / 365;
+<script>
+/* ------------------ البيانات: الخدمات ------------------ */
+// خدمات ثابتة سنويًا
+const FIXED_SERVICES = [
+  { id:'broker_inout', name:'إصدار/تجديد ترخيص مزاولة نشاط وسيط الشحن (داخلي/دولي)', yearly:5000 },
+  { id:'broker_it',    name:'إصدار/تجديد ترخيص وسيط الشحن باستخدام تكنولوجيا المعلومات', yearly:10000 },
+  { id:'cargo_it',     name:'إصدار/تجديد ترخيص مزاولة نشاط النقل البري للبضائع باستخدام تكنولوجيا المعلومات', yearly:10000 },
+  { id:'multimodal',   name:'إصدار/تجديد ترخيص مزاولة نشاط النقل البري متعدد الوسائط', yearly:10000 },
+  { id:'containers',   name:'إصدار/تجديد ترخيص مزاولة نشاط النقل البري لنقل وتداول الحاويات', yearly:10000 },
+  { id:'hazard',       name:'إصدار/تجديد ترخيص مزاولة نشاط النقل البري للبضائع الخطرة', yearly:10000 },
+];
 
-      const amount = (mode==='quarter') ? byQuarter : exactDaily;
-      const basis = (mode==='quarter') ? 'تقريب لأقرب ربع' : 'حساب أدق (باليوم)';
+// خدمة بفئات أ/ب/ج/د/هـ (ترخيص واحد للشركة حسب الفئة)
+const CLASS_SERVICE = {
+  id:'activity_classed',
+  name:'إصدار/تجديد ترخيص بمزاولة أحد أنشطة النقل البري للبضائع (حسب الفئة)',
+  tiers:[ {label:'أ', yearly:5000}, {label:'ب', yearly:4000}, {label:'ج', yearly:3000}, {label:'د', yearly:2000}, {label:'هـ', yearly:1000} ]
+};
 
-      results.classList.remove('hidden');
-      results.innerHTML = `
-        <h3>النتائج</h3>
-        <table>
-          <tr><th>الخدمة</th><td>${sName}</td></tr>
-          <tr><th>بداية العد</th><td>${toISODateUTC(startClamped)}</td></tr>
-          <tr><th>حتى (اليوم - 1)</th><td>${toISODateUTC(yestUTC)}</td></tr>
-          <tr><th>عدد الأيام</th><td>${days}</td></tr>
-          <tr><th>قيمة السنة</th><td>${yearly.toLocaleString()}</td></tr>
-          <tr><th>عدد الأرباع (بعد التقريب)</th><td>${quarters}</td></tr>
-          <tr><th>المبلغ (بالربع)</th><td class="ok">${byQuarter.toFixed(2)}</td></tr>
-          <tr><th>المبلغ (باليوم)</th><td class="ok">${exactDaily.toFixed(2)}</td></tr>
-        </table>
-      `;
+// خدمة حسب نوع الشركة
+const COMPANY_BRANCH = {
+  id:'branch_license',
+  name:'الموافقة على ترخيص فرع لشركة لمزاولة نشاط النقل البري للبضائع',
+  types:[ {label:'شركة مساهمة مصرية', yearly:4000}, {label:'شركة ذات مسئولية محدودة', yearly:3000}, {label:'شركات التوصية البسيطة والتضامن', yearly:2000}, {label:'شركة الأفراد', yearly:1000} ]
+};
 
-      rwrap.classList.remove('hidden');
-      $('#rc-client').textContent = client;
-      $('#rc-service').textContent = sName;
-      $('#rc-start').textContent = toISODateUTC(startClamped);
-      $('#rc-end').textContent = toISODateUTC(yestUTC);
-      $('#rc-days').textContent = days;
-      $('#rc-basis').textContent = basis;
-      $('#rc-mult').textContent = (mode==='quarter') ? (quarters + ' ربع') : (days + ' يوم');
-      $('#rc-yearly').textContent = yearly.toLocaleString();
-      $('#rc-amount').textContent = amount.toFixed(2);
-      $('#rc-issued').textContent = new Date().toLocaleString('ar-EG');
+// خدمات “حسب عدد العربيات” (تسعير لكل مركبة حسب الوزن القائم الخاص بالخدمة)
+const VEHICLE_SERVICES = [
+  { id:'card_waged', name:'إصدار بطاقة تشغيل لوسائل النقل البري للبضائع بأجر (للمركبة سنويًا)',
+    ranges:[ // حسب الوزن القائم
+      {min:-Infinity, max:8,   yearly:150, label:'أقل من 8 طن'},
+      {min:8,         max:20,  yearly:200, label:'من 8 إلى 20 طن (شامل)'},
+      {min:20,        max:Infinity, yearly:250, label:'أكبر من 20 طن'}
+    ]
+  },
+  { id:'card_self', name:'إصدار/تجديد بطاقة تشغيل لوسيلة النقل البري الذاتي للبضائع (للمركبة سنويًا)',
+    ranges:[
+      {min:-Infinity, max:8,   yearly:75,  label:'أقل من 8 طن'},
+      {min:8,         max:30,  yearly:100, label:'من 8 إلى 30 طن (شامل)'},
+      {min:30,        max:Infinity, yearly:125, label:'أكبر من 30 طن'}
+    ]
+  }
+];
+
+// تجميع لكل الخدمات في قائمة موحدة
+const SERVICE_LIST = [
+  {group:'خدمات ثابتة', items: FIXED_SERVICES.map(s=>({...s, kind:'fixed'}))},
+  {group:'خدمة حسب الفئة (أ/ب/ج/د/هـ)', items:[{...CLASS_SERVICE, kind:'classed'}]},
+  {group:'خدمة حسب نوع الشركة', items:[{...COMPANY_BRANCH, kind:'company'}]},
+  {group:'خدمات بحسب عدد العربيات', items: VEHICLE_SERVICES.map(s=>({...s, kind:'vehicle'}))},
+];
+
+/* ------------------ مساعدات حساب المدة ------------------ */
+const BASELINE = new Date(Date.UTC(2022,10,22)); // 22 نوفمبر 2022
+function toISODateUTC(d){ return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString().slice(0,10); }
+function daysBetweenUTC(a,b){ const MS = 86400000; const au = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate()); const bu = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()); return Math.round((bu-au)/MS); }
+function ceilQuartersFromDays(days){ return Math.ceil((days/365)*4); }
+
+function computeAmountForDuration(yearly, startDateStr, mode){
+  if(!startDateStr) throw new Error('missing start date');
+  const sd = new Date(startDateStr+'T00:00:00');
+  const start = new Date(Date.UTC(sd.getFullYear(), sd.getMonth(), sd.getDate()));
+  const startClamped = (start.getTime() <= BASELINE.getTime()) ? BASELINE : start;
+  const now = new Date();
+  const yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()-1));
+  const days = daysBetweenUTC(startClamped, yesterday);
+  if (days < 0) return { ok:false, msg:'تاريخ البداية لاحق ليوم أمس' };
+
+  const perQuarter = yearly/4;
+  const quarters = ceilQuartersFromDays(days);
+  const byQuarter = quarters*perQuarter;
+  const exactDaily = (yearly*days)/365;
+  const amount = (mode==='quarter')?byQuarter:exactDaily;
+  const basis  = (mode==='quarter')?'تقريب لأقرب ربع':'حساب أدق (باليوم)';
+  return { ok:true, amount, basis, days, start:toISODateUTC(startClamped), end:toISODateUTC(yesterday), quarters, byQuarter, exactDaily };
+}
+
+/* ------------------ تعبئة قائمة الخدمات والنموذج الديناميكي ------------------ */
+const $ = s=>document.querySelector(s);
+const svcSel = $('#svc');
+const dynBox = $('#svcDynamic');
+const basketBody = $('#basketBody');
+
+function fillServiceSelect(){
+  svcSel.innerHTML = '';
+  SERVICE_LIST.forEach(g=>{
+    const og = document.createElement('optgroup');
+    og.label = g.group;
+    g.items.forEach(it=>{
+      const op = document.createElement('option');
+      op.value = JSON.stringify(it);
+      op.textContent = it.name;
+      og.appendChild(op);
+    });
+    svcSel.appendChild(og);
+  });
+  renderDynamic();
+}
+svcSel.addEventListener('change', renderDynamic);
+
+function renderDynamic(){
+  dynBox.innerHTML = '';
+  const data = JSON.parse(svcSel.value);
+  if (data.kind==='fixed'){
+    dynBox.innerHTML = `
+      <div><label>القيمة السنوية</label><input disabled value="${data.yearly}"></div>
+      <div><label>ملاحظات (اختياري)</label><input id="fx_note" placeholder="..."></div>`;
+  } else if (data.kind==='classed'){
+    const opts = data.tiers.map(t=>`<option value="${t.yearly}">${t.label} — ${t.yearly}/سنة</option>`).join('');
+    dynBox.innerHTML = `<div><label>الفئة</label><select id="cls_tier">${opts}</select></div>
+                        <div><label>ملاحظات</label><input id="cls_note" placeholder="..."></div>`;
+  } else if (data.kind==='company'){
+    const opts = data.types.map(t=>`<option value="${t.yearly}">${t.label} — ${t.yearly}/سنة</option>`).join('');
+    dynBox.innerHTML = `<div><label>نوع الشركة</label><select id="cmp_type">${opts}</select></div>
+                        <div><label>ملاحظات</label><input id="cmp_note" placeholder="..."></div>`;
+  } else if (data.kind==='vehicle'){
+    dynBox.innerHTML = `
+      <div class="grid g2" style="grid-column:1/-1">
+        <div><label>رقم اللوحة</label><input id="veh_plate" placeholder="مثال: س ص 1234"></div>
+        <div><label>الوزن القائم (بالطن)</label><input id="veh_weight" type="number" step="0.1" placeholder="مثال: 12.5"></div>
+      </div>
+      <div class="btns"><button id="veh_add" class="secondary">إضافة مركبة</button></div>
+      <table id="veh_table"><thead><tr><th>لوحة</th><th>الوزن القائم</th><th>الشريحة</th><th>سنوي</th><th class="right">حذف</th></tr></thead><tbody></tbody></table>
+      <div style="margin-top:6px"><b>إجمالي سنوي (للمركبات):</b> <span id="veh_sum">0</span></div>
+      <div style="margin-top:6px"><label>ملاحظات</label><input id="veh_note" placeholder="..."></div>
+    `;
+    // سلوك إضافة المركبة
+    $('#veh_add').addEventListener('click', ()=>{
+      const plate = ($('#veh_plate').value||'').trim();
+      const w = parseFloat($('#veh_weight').value);
+      if(!plate || !Number.isFinite(w) || w<=0){ alert('أدخل اللوحة والوزن القائم بصورة صحيحة'); return; }
+      const tier = pickRangeForService(data, w);
+      const yearly = tier.yearly;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${plate}</td><td>${w}</td><td>${tier.label}</td><td>${yearly}</td><td class="right"><button class="secondary del">حذف</button></td>`;
+      $('#veh_table tbody').appendChild(tr);
+      $('#veh_plate').value=''; $('#veh_weight').value='';
+      updateVehSum();
+    });
+    // حذف مركبة
+    dynBox.addEventListener('click',(e)=>{
+      if(e.target.classList.contains('del')){
+        e.target.closest('tr').remove(); updateVehSum();
+      }
+    });
+    function updateVehSum(){
+      let s=0;
+      $('#veh_table tbody').querySelectorAll('tr').forEach(r=>{ s += Number(r.children[3].textContent||0); });
+      $('#veh_sum').textContent = s.toFixed(2);
     }
+  }
+}
+function pickRangeForService(svc, weight){
+  // اختيار الشريحة حسب ranges المُعرَّفة للخدمة
+  for (const r of svc.ranges){
+    if (weight >= r.min && weight <= r.max) return r;
+  }
+  return svc.ranges[svc.ranges.length-1];
+}
+$('#resetSvc').addEventListener('click', renderDynamic);
 
-    $('#calc').addEventListener('click', compute);
-    $('#print').addEventListener('click', ()=>{ window.print(); });
-  </script>
+/* ------------------ سلة الإيصال ------------------ */
+const basket = []; // {title, detail, yearly, amountFinal}
+function addToBasket(){
+  const base = JSON.parse(svcSel.value);
+  const start = $('#startDate').value;
+  const mode = $('#mode').value;
+  const client = $('#client').value||'—';
+
+  let title = base.name;
+  let detail = '';
+  let yearly = 0;
+
+  if (base.kind==='fixed'){
+    yearly = Number(base.yearly);
+    detail = ($('#fx_note')?.value||'');
+  } else if (base.kind==='classed'){
+    yearly = Number($('#cls_tier').value);
+    const label = $('#cls_tier').selectedOptions[0].textContent.split('—')[0].trim();
+    title += ` — الفئة ${label}`;
+    detail = ($('#cls_note')?.value||'');
+  } else if (base.kind==='company'){
+    yearly = Number($('#cmp_type').value);
+    const label = $('#cmp_type').selectedOptions[0].textContent.split('—')[0].trim();
+    title += ` — ${label}`;
+    detail = ($('#cmp_note')?.value||'');
+  } else if (base.kind==='vehicle'){
+    // إجمالي سنوي = مجموع سيارات
+    const rows = Array.from(dynBox.querySelectorAll('#veh_table tbody tr'));
+    if(rows.length===0){ alert('أضف مركبة واحدة على الأقل'); return; }
+    let sum=0; const lines=[];
+    rows.forEach(r=>{
+      const plate=r.children[0].textContent, w=r.children[1].textContent, band=r.children[2].textContent, yr=Number(r.children[3].textContent);
+      sum += yr; lines.push(`${plate} — ${w} طن — ${band} — ${yr}`);
+    });
+    yearly = sum;
+    detail = 'مركبات:\n' + lines.join('\n') + ( $('#veh_note')?.value?('\n'+$('#veh_note').value):'' );
+  }
+
+  const res = computeAmountForDuration(yearly, start, mode);
+  if(!res.ok){ alert(res.msg); return; }
+  const item = {
+    title, detail,
+    yearly,
+    amountFinal: res.amount,
+    meta: { basis:res.basis, start:res.start, end:res.end, days:res.days, quarters:res.quarters }
+  };
+  basket.push(item);
+  renderBasket();
+}
+$('#addToBasket').addEventListener('click', addToBasket);
+
+function renderBasket(){
+  basketBody.innerHTML = '';
+  basket.forEach((it,idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${it.title}</td><td><pre style="white-space:pre-wrap;margin:0">${it.detail||'—'}</pre></td><td class="ok">${it.amountFinal.toFixed(2)}</td><td class="right"><button class="secondary" data-i="${idx}">حذف</button></td>`;
+    basketBody.appendChild(tr);
+  });
+}
+basketBody.addEventListener('click',(e)=>{
+  if(e.target.tagName==='BUTTON' && e.target.dataset.i){
+    basket.splice(Number(e.target.dataset.i),1); renderBasket();
+  }
+});
+$('#clearBasket').addEventListener('click',()=>{ basket.length=0; renderBasket(); });
+
+/* ------------------ اعتماد/طباعة + سجل التقارير ------------------ */
+const LOG_KEY = "receipts_log_v1";
+function _loadLog(){ try{ return JSON.parse(localStorage.getItem(LOG_KEY))||[] }catch{ return [] } }
+function _saveLog(list){ localStorage.setItem(LOG_KEY, JSON.stringify(list)) }
+
+function finalizeAndPrint(){
+  if (basket.length===0){ alert('السلة فارغة'); return; }
+  const client = $('#client').value||'—';
+  const mode = $('#mode').value;
+  const devFee = Number($('#devFee').value||0);
+  const stamp  = Number($('#stamp').value||0);
+  const subtotal = basket.reduce((s,x)=>s+Number(x.amountFinal||0),0);
+  const total = subtotal + devFee + stamp;
+
+  // ملء الإيصال
+  $('#rcClient').textContent = client;
+  $('#rcDate').textContent = ($('#startDate').value || '—');
+  $('#rcNo').textContent = ($('#invSeq').value || nextSeq());
+  $('#rcBasis').textContent = (mode==='quarter')?'تقريب لأقرب ربع':'حساب أدق (باليوم)';
+
+  const tb = $('#rcItems tbody'); tb.innerHTML='';
+  basket.forEach(b=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${b.title}</td><td><pre style="white-space:pre-wrap;margin:0">${b.detail||'—'}</pre></td><td>${b.amountFinal.toFixed(2)}</td>`;
+    tb.appendChild(tr);
+  });
+  $('#rcSub').textContent = subtotal.toFixed(2);
+  $('#rcDev').textContent = devFee.toFixed(2);
+  $('#rcStamp').textContent= stamp.toFixed(2);
+  $('#rcTotal').textContent= total.toFixed(2);
+  $('#rcIssued').textContent = new Date().toLocaleString('ar-EG');
+
+  // حفظ في السجل للتقارير
+  const items = basket.map(b=>({ serviceName:b.title, amount:b.amountFinal }));
+  const list = _loadLog();
+  const rec = {
+    ts:new Date().toISOString(),
+    date:new Date().toISOString().slice(0,10),
+    client, items, subtotal, devFee, stamp, total
+  };
+  list.push(rec); _saveLog(list);
+
+  // طباعة
+  window.print();
+}
+function nextSeq(){
+  const k='receipt_seq_v1';
+  const n = Number(localStorage.getItem(k)||0)+1;
+  localStorage.setItem(k, String(n));
+  $('#invSeq').value = n;
+  return n;
+}
+$('#finalize').addEventListener('click', finalizeAndPrint);
+
+/* ------------------ التقارير اليومية ------------------ */
+function setDefaultReportDate(){
+  const d = new Date();
+  const v = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString().slice(0,10);
+  $('#repDate').value = v;
+}
+setDefaultReportDate();
+
+function formatCurrency(n){ return Number(n||0).toLocaleString('ar-EG', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+function reportByService(dayStr){
+  const out = $('#repOut');
+  const rows = _loadLog().filter(r=>r.date===dayStr);
+  const counts={}, totals={};
+  rows.forEach(r=>{
+    const seen = new Set();
+    r.items.forEach(it=>{
+      totals[it.serviceName]=(totals[it.serviceName]||0)+Number(it.amount||0);
+      if(!seen.has(it.serviceName)){ counts[it.serviceName]=(counts[it.serviceName]||0)+1; seen.add(it.serviceName); }
+    });
+  });
+  const names = Object.keys(counts).sort();
+  if(names.length===0){ out.innerHTML='<div class="sub">لا توجد إيصالات في هذا اليوم.</div>'; return; }
+  let html='<table><tr><th>الخدمة</th><th>عدد الإيصالات</th><th>إجمالي المبالغ</th></tr>';
+  names.forEach(n=> html += `<tr><td>${n}</td><td>${counts[n]}</td><td>${formatCurrency(totals[n])}</td></tr>`);
+  html+='</table>'; out.innerHTML=html;
+}
+function reportByClient(dayStr){
+  const out = $('#repOut');
+  const rows = _loadLog().filter(r=>r.date===dayStr);
+  const counts={}, totals={};
+  rows.forEach(r=>{
+    const c=r.client||'—';
+    counts[c]=(counts[c]||0)+1;
+    totals[c]=(totals[c]||0)+Number(r.total||0);
+  });
+  const clients=Object.keys(counts).sort();
+  if(clients.length===0){ out.innerHTML='<div class="sub">لا توجد إيصالات في هذا اليوم.</div>'; return; }
+  let html='<table><tr><th>العميل</th><th>عدد الإيصالات</th><th>إجمالي (بعد الرسوم)</th></tr>';
+  clients.forEach(c=> html += `<tr><td>${c}</td><td>${counts[c]}</td><td>${formatCurrency(totals[c])}</td></tr>`);
+  html+='</table>'; out.innerHTML=html;
+}
+$('#repByService').addEventListener('click', ()=> reportByService($('#repDate').value));
+$('#repByClient').addEventListener('click', ()=> reportByClient($('#repDate').value));
+
+/* ------------------ تهيئة ------------------ */
+fillServiceSelect();
+// تسلسل الإيصال الافتراضي
+nextSeq();
+</script>
 </body>
 </html>
